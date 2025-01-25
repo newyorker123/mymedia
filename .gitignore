@@ -140,3 +140,7 @@ dmypy.json
 
 # MacOS
 .DS_Store
+
+
+# My assist files
+tests/*.ipynb
