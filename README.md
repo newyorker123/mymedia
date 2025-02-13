@@ -4,9 +4,7 @@ Tools to manage my video and manga collections for media server like kavita and 
 
 ## Installation
 
-```bash
-$ pip install mymedia
-```
+- TODO
 
 ## Usage
 
