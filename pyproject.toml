@@ -24,3 +24,7 @@ addopts = "-s"
 testpaths = [
     "tests"
 ]
+
+
+[tool.poetry.scripts]
+mymedia_rename_tv='mymedia.video.rename_tv:main'

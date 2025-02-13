@@ -74,7 +74,7 @@ class SubFile(TVFile):
         new_p=self.path.with_stem(f"{name} S{season:02}E{self.match_ep+offset:02}.{version}")
         new_name=new_p.name
         if old_name != new_name:
-            self.path.rename(new_name)
+            self.path.rename(new_p)
             self.log_rename(old_name,new_name,season)
             return 1
         return 0
@@ -189,7 +189,7 @@ class SeasonFolder:
         self.nfo_list.sort(key=lambda f:f.match_ep)
 
     def infer_config(self):
-        with open(self.config,"r") as f:
+        with open(self.config,"r",encoding='utf-8') as f:
             obj=json.load(f)
         
         self.__class__.name=self.__class__.name if self.__class__.name else obj.get("name",None)
@@ -200,7 +200,7 @@ class SeasonFolder:
         self.offset = self.offset if self.offset else 0
         
         try:
-            match_season=int(re.search(r"(?<=^Seaason\s)\d+",self.path.name).group())
+            match_season=int(re.search(r"(?<=^Season\s)\d+",self.path.name).group())
         except AttributeError:
             match_season=-1
 
@@ -213,14 +213,14 @@ class SeasonFolder:
                     match_name=re.search(r".*?(?=\s\(\d{4}\))",self.path.name).group()
                 except AttributeError:
                     match_name=input("Can't infer TV name.\nPlease enter name(-1 to exit): ")
-                    if match_name==-1:
+                    if match_name=='-1':
                         sys.exit()
             else:
                 try:
                     match_name=re.search(r".*?(?=\s\(\d{4}\))",self.path.parent.name).group()
                 except AttributeError:
                     match_name=input("Can't infer TV name.\nPlease enter name(-1 to exit): ")
-                    if match_name==-1:
+                    if match_name=='-1':
                         sys.exit()
 
             self.__class__.name=match_name
