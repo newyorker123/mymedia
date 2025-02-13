@@ -1,11 +1,19 @@
+import builtins
 import re
 import json
 from pathlib import Path
 from typing import Sequence
 import pytest 
 
-from mymedia.video.rename_tv import main
+
+from mymedia.video.rename_tv import main,SeasonFolder
 from mymedia.video.utils import MYMEIDA_CONFIG,HISTORY
+from conftest import NO_NAME, PATH_NAME, CONFIG_NAME, INPUT_NAME, CL_NAME, CONFIG_SEASON, CONFIG_OFFSET,CL_SEASON,CL_OFFSET
+
+@pytest.fixture(autouse=True)
+def clean_class():
+    yield
+    SeasonFolder.name=None
 
 def create_standard_files(path:str|Path,name,season,ep_list:Sequence[int],log_list:Sequence[int],name_template):
     path=Path(path)
@@ -104,6 +112,92 @@ def plain_all_new_path_with_name_folder_offset_12(name_template,tmp_path):
     return no_season_folder
 
 
+
+
+@pytest.mark.usefixtures("monkeypatch")
+class TestSeasonFolder:
+    def test_scan_plain_with_name_no_config_nof(self,plain_with_name_no_config_nof):
+        root=plain_with_name_no_config_nof()
+        s=SeasonFolder(root)
+        assert s.name == PATH_NAME
+        assert s.season == 1
+        assert s.offset == 0
+
+    def test_scan_plain_with_name_no_config_nof_with_cl(self,plain_with_name_no_config_nof):
+        root=plain_with_name_no_config_nof()
+        s=SeasonFolder(root,name=CL_NAME,season=CL_SEASON,offset=CL_OFFSET)
+        assert s.name == CL_NAME
+        assert s.season == CL_SEASON
+        assert s.offset == CL_OFFSET
+
+    def test_scan_plain_with_name_with_config_nof(self,plain_with_name_with_config_nof):
+        
+        root=plain_with_name_with_config_nof()
+        s=SeasonFolder(root)
+        assert s.name == CONFIG_NAME
+        assert s.season == CONFIG_SEASON
+        assert s.offset == CONFIG_OFFSET
+
+    def test_scan_plain_with_name_with_config_nof_with_cl(self,plain_with_name_with_config_nof):
+
+        root=plain_with_name_with_config_nof()
+        s=SeasonFolder(root,name=CL_NAME,season=CL_SEASON,offset=CL_OFFSET)
+        assert s.name == CL_NAME
+        assert s.season == CL_SEASON
+        assert s.offset == CL_OFFSET
+
+    def test_scan_plain_no_name_no_config_nof(self,plain_no_name_no_config_nof,monkeypatch):
+        monkeypatch.setattr(builtins,"input",lambda _:INPUT_NAME)
+
+        root=plain_no_name_no_config_nof()
+        s=SeasonFolder(root)
+        assert s.name == INPUT_NAME
+        assert s.season == 1
+        assert s.offset == 0
+
+    def test_scan_plain_no_name_no_config_nof_with_cl(self,plain_no_name_no_config_nof,monkeypatch):
+        monkeypatch.setattr(builtins,"input",lambda _:INPUT_NAME)
+
+        root=plain_no_name_no_config_nof()
+        s=SeasonFolder(root,name=CL_NAME,season=CL_SEASON,offset=CL_OFFSET)
+        assert s.name == CL_NAME
+        assert s.season == CL_SEASON
+        assert s.offset == CL_OFFSET
+
+    def test_scan_plain_no_name_with_config_nof(self,plain_no_name_with_config_nof,monkeypatch):
+        monkeypatch.setattr(builtins,"input",lambda _:INPUT_NAME)
+
+        root=plain_no_name_with_config_nof()
+        s=SeasonFolder(root)
+        assert s.name == CONFIG_NAME
+        assert s.season == CONFIG_SEASON
+        assert s.offset == CONFIG_OFFSET
+
+    def test_scan_plain_no_name_with_config_nof_with_cl(self,plain_no_name_with_config_nof,monkeypatch):
+        monkeypatch.setattr(builtins,"input",lambda _:INPUT_NAME)
+
+        root=plain_no_name_with_config_nof()
+        s=SeasonFolder(root,name=CL_NAME,season=CL_SEASON,offset=CL_OFFSET)
+        assert s.name == CL_NAME
+        assert s.season == CL_SEASON
+        assert s.offset == CL_OFFSET
+
+    def test_scan_season_with_name_no_config_nof(self,season_with_name_no_config_nof):
+        root=season_with_name_no_config_nof()
+        s0=SeasonFolder(root/"Season 0")
+        s1=SeasonFolder(root/"Season 1")
+        s2=SeasonFolder(root/"Season 2")
+
+        assert s0.name==s1.name==s2.name==PATH_NAME
+        
+        #assert s.name == PATH_NAME
+        #assert s.season == 1
+        #assert s.offset == 0
+
+    
+
+
+    
 
 
 
