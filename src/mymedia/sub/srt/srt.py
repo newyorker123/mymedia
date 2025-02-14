@@ -2,11 +2,11 @@ import re
 from pathlib import Path
 
 class SrtLine:
-    def __init__(self,num,start,end,content):
+    def __init__(self,num,start:str,end:str,content:str):
         self.num=num
-        self.start = start
-        self.end = end
-        self.content = content
+        self.start = start.strip()
+        self.end = end.strip()
+        self.content = content.strip()
 
     @staticmethod
     def parse_text(lines:str):
@@ -39,8 +39,13 @@ class SrtLine:
     def __repr__(self):
         return self.text
 
+
+
 class SrtFIle:
-    def __init__(self,srt_list:list[SrtLine]):
+    def __init__(self,srt_list:list[SrtLine]|None=None):
+        if srt_list is None:
+            srt_list=[]
+
         self.srt_list=srt_list
 
     @property
