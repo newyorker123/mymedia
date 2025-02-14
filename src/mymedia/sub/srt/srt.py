@@ -41,12 +41,16 @@ class SrtLine:
 
 
 
-class SrtFIle:
-    def __init__(self,srt_list:list[SrtLine]|None=None):
+class SrtFile:
+    def __init__(self,srt_list:list[SrtLine]|None=None,file=None):
         if srt_list is None:
             srt_list=[]
 
         self.srt_list=srt_list
+        
+        self.file=file
+        if self.file is not None:
+            self.file=Path(self.file.resolve())
 
     @property
     def num_of_lines(self):
@@ -54,29 +58,46 @@ class SrtFIle:
 
 
     @classmethod
-    def from_text(cls,text:str):
+    def from_text(cls,text:str,file=None):
         srt_list=text.split("\n\n")
-        return cls([SrtLine.from_text(line) for line in srt_list])
+        return cls([SrtLine.from_text(line) for line in srt_list],file)
     
     @classmethod
     def from_file(cls,file_path:str|Path):
-        with open(file_path) as f:
+        with open(file_path,encoding='utf-8') as f:
             text=f.read()
-        return cls.from_text(text)
+        obj = cls.from_text(text,file_path)
+        return obj
     
     @property
     def num_of_lines(self):
         return len(self.srt_list)
     
+    def __getitem__(self,key):
+        return self.srt_list[key]
+    
     def add_line(self,start,end,content,num=None):
         if num is None:
-            num=self.srt_list[-1].num
+            num= 1 if len(self.srt_list) == 0 else self.srt_list[-1].num+1
 
         self.srt_list.append(SrtLine(num,start,end,content))
     
-    def output(self,file_path):
-        with open(file_path,'w') as f:
-            f.write('\n'.join([srtline.text for srtline in self.srt_list]))
+    def output(self,dir='out',file_stem=None):
+        text='\n'.join([srtline.text for srtline in self.srt_list])
+        
+        dir=Path(dir)
+        dir.mkdir(exist_ok=True)
+
+        if file_stem is None:
+            if self.file is not None:
+                file_stem=self.file.stem
+            else: 
+                raise FileNotFoundError("Please enter output file stem")
+
+        with open(dir/f"{file_stem}.srt",'w') as f:
+            f.write(text)
+
+        
 
     
 

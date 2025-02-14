@@ -1,1 +1,1 @@
-from .srt import SrtLine, SrtFIle
+from .srt import SrtLine, SrtFile
