@@ -68,6 +68,12 @@ class SrtFIle:
     def num_of_lines(self):
         return len(self.srt_list)
     
+    def add_line(self,start,end,content,num=None):
+        if num is None:
+            num=self.srt_list[-1].num
+
+        self.srt_list.append(SrtLine(num,start,end,content))
+    
     def output(self,file_path):
         with open(file_path,'w') as f:
             f.write('\n'.join([srtline.text for srtline in self.srt_list]))
