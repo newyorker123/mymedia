@@ -109,16 +109,30 @@ def mode_vol(path:Path,output_dir:Path, name, vol_regex:list[str]):
     folders=[folder for folder in path.glob('*/') if folder.name != output_dir.name]
     
     for folder in folders:
-        if folder.name != output_dir.name and folder.is_dir():
-            if name is not None:
-                vol_num=match_num(folder.name,vol_regex,"volume")
-                out_stem=f"{name} Vol.{vol_num}"
-            else:
-                out_stem=folder.name
+        if name is not None:
+            vol_num=match_num(folder.name,vol_regex,"volume")
+            out_stem=f"{name} Vol.{vol_num}"
+        else:
+            out_stem=folder.name
 
-            archive_image(folder,output_dir,out_stem,0,None)
+        change_colophon(folder)
 
-        print(f"Volume {vol_num} finished")
+        archive_image(folder,output_dir,out_stem,0,None)
+
+        print(f"{folder} finished")
+
+def change_colophon(volume:Path):
+    imgs=list(volume.glob('img[0-9][0-9][0-9]*.jpg'))
+    if len(imgs) > 0:
+        
+        colophon=volume/'i-colophon.jpg'
+        white=volume/'i-white.jpg'
+        if colophon.exists():
+            colophon.rename(colophon.with_stem('z-colophon'))
+        if white.exists():
+            white.rename(white.with_stem('c-white'))
+        
+
 
         
 
@@ -220,7 +234,7 @@ def main(args=None):
 
     if args['mode'] == 'vol':
         vol_regex= cat_regex(args['vol_regex'],VOL_REGEX)
-        mode_vol(path,output_path,args['name'],vol_regex,0)
+        mode_vol(path,output_path,args['name'],vol_regex)
     elif args['mode'] == 'bilibili':
         vol_regex= cat_regex(args['vol_regex'],VOL_REGEX)
         chap_regex = cat_regex(args['chap_regex'],CHAP_REGEX)
