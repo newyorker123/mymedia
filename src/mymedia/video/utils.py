@@ -11,17 +11,16 @@ NFO_SUFFIX_LIST=['.nfo']
 MYMEIDA_CONFIG="mymedia-config.json"
 HISTORY="rename_history.log"
 
-PATTERN=fr"EP(\d+)|Ep(\d+)|\[(\d+)\]|S\d\dE(\d+)|第(\d+)集|第(\d+)話|#(\d+)|^(\d+)$|-\s(\d+)\s|-\s(\d+)v[23]"
+EP_REGEX=[
+    r"EP(\d+)",
+    r"Ep(\d+)",
+    r"\[(\d+)\]",
+    r"S\d\dE(\d+)",
+    r"第(\d+)集",
+    r"第(\d+)話",
+    r"#(\d+)",
+    r"^(\d+)$",
+    r"-\s(\d+)\s",
+    r"-\s(\d+)v[23]",
 
-def match_episode_num(file,pattern):
-    try:
-        episode=get_group(re.search(pattern,file.stem,re.I))
-        episode=int(episode)
-    except AttributeError:
-        print(f"Can't get episode number for {file.name}. Please refine regex.")
-        number=input("Please input episode number(-1 to exit): ")
-        if number=="-1":
-            sys.exit()
-        else:
-            episode=int(number)
-    return episode
+]

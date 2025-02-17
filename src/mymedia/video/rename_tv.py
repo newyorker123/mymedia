@@ -5,17 +5,18 @@ import logging
 import json
 import sys
 
-from .utils import VID_SUFFIX_LIST,SUB_SUFFIX_LIST,IMG_SUFFIX_LIST,NFO_SUFFIX_LIST,PATTERN,match_episode_num,MYMEIDA_CONFIG
+from .utils import VID_SUFFIX_LIST,SUB_SUFFIX_LIST,IMG_SUFFIX_LIST,NFO_SUFFIX_LIST,EP_REGEX,MYMEIDA_CONFIG
+from mymedia.utils import match_num,cat_regex
 
 
 
 class TVFile:
     TYPE="TV"
-    def __init__(self,path:Path,pattern:str):
+    def __init__(self,path:Path,ep_regex:list[str]):
         self.path=path.resolve()
         self.original_name=self.path.name
-        self.pattern=pattern
-        self.match_ep=match_episode_num(self.path,pattern)
+        self.ep_regex=ep_regex
+        self.match_ep=match_num(self.path.name,ep_regex,'episode')
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.path})"
@@ -37,20 +38,20 @@ class TVFile:
 
 class ShowFile(TVFile):
     TYPE="VIDEO"
-    standard_pattern=r"^.*?\sS\d+E\d+"
+    standard_regex=r"^.*?\sS\d+E\d+"
 
-    def __init__(self,path:Path,pattern:str):
-        super().__init__(path,pattern)
-        self.new=False if re.search(self.standard_pattern,self.path.stem) else True
+    def __init__(self,path:Path,ep_regex:list[str]):
+        super().__init__(path,ep_regex)
+        self.new=False if re.search(self.standard_regex,self.path.stem) else True
 
 
 class SubFile(TVFile):
     TYPE="SUB"
-    standard_pattern=r"^.*?\sS\d+E\d+(\.\w+)?"
+    standard_regex=r"^.*?\sS\d+E\d+(\.\w+)?"
 
-    def __init__(self,path:Path,pattern:str):
-        super().__init__(path,pattern)
-        self.new=False if re.search(self.standard_pattern,self.path.stem) else True
+    def __init__(self,path:Path,ep_regex:list[str]):
+        super().__init__(path,ep_regex)
+        self.new=False if re.search(self.standard_regex,self.path.stem) else True
 
     def get_sub_version(self):
         if (res:=re.search(r"\b(tc|sc|jptc|jpsc|chs|cht|jp|jap|gb)\b",self.original_name,re.I)):
@@ -82,22 +83,22 @@ class SubFile(TVFile):
 
 class ThumbFile(TVFile):
     TYPE="THUMB"
-    standard_pattern=r".*?-thumb$"
+    standard_regex=r".*?-thumb$"
 
-    def __init__(self,path:Path,pattern:str):
-        super().__init__(path,pattern)
+    def __init__(self,path:Path,ep_regex:list[str]):
+        super().__init__(path,ep_regex)
         #self.new=False if re.search(self.standard_pattern,self.path.stem) else True
 
     @staticmethod
     def is_thumb(file:Path):
-        if file.suffix in IMG_SUFFIX_LIST and re.search(ThumbFile.standard_pattern,file.stem):
+        if file.suffix in IMG_SUFFIX_LIST and re.search(ThumbFile.standard_regex,file.stem):
             return True
         else:
             return False
         
 class NFOFile(TVFile):
-    def __init__(self,path:Path,pattern:str):
-        super().__init__(path,pattern)
+    def __init__(self,path:Path,ep_regex:list[str]):
+        super().__init__(path,ep_regex)
 
     
 
@@ -107,9 +108,9 @@ class NFOFile(TVFile):
 
 class SeasonFolder:
     name=None
-    def __init__(self,path:Path|str,pattern=PATTERN,name:None|str=None,season:None|int=None,offset:None|int=None,start:None|int=None):
+    def __init__(self,path:Path|str,ep_regex:list[str]=EP_REGEX,name:None|str=None,season:None|int=None,offset:None|int=None,start:None|int=None):
         self.path=Path(path).resolve()
-        self.pattern=pattern
+        self.ep_regex:list[str]=ep_regex
         self.vid_list=[]
         self.sub_list=[]
         self.thumb_list=[]
@@ -169,11 +170,11 @@ class SeasonFolder:
         for f in self.path.iterdir():
             if f.is_file():
                 if f.suffix in VID_SUFFIX_LIST:
-                    self.vid_list.append(ShowFile(f,self.pattern))
+                    self.vid_list.append(ShowFile(f,self.ep_regex))
                 elif f.suffix in SUB_SUFFIX_LIST:
-                    self.sub_list.append(SubFile(f,self.pattern))
+                    self.sub_list.append(SubFile(f,self.ep_regex))
                 elif ThumbFile.is_thumb(f):
-                    self.thumb_list.append(ThumbFile(f,self.pattern))
+                    self.thumb_list.append(ThumbFile(f,self.ep_regex))
                 #elif f.suffix in NFO_SUFFIX_LIST:
                 #    self.nfo_list.append(NFOFile(f,self.pattern))
                 elif f.name == "rename_history.log":
@@ -337,7 +338,7 @@ def parse_args(args=None):
     parser.add_argument("-n","--name",help="TV show's name")
     parser.add_argument("--season",type=int)
     parser.add_argument("-m","--movie",action="store_true")
-    parser.add_argument("--pattern",help="regex to match episode number")
+    parser.add_argument("--ep_regex",nargs='+',help="regex to match episode number")
     
     group1=parser.add_mutually_exclusive_group()
     group1.add_argument("-o",'--offset',type=int)
@@ -353,7 +354,8 @@ def parse_args(args=None):
 def main(args=None):
     args=parse_args(args)
     path=Path(args.path)
-    pattern=f"{args.pattern}|{PATTERN}" if args.pattern else PATTERN
+
+    ep_regex=cat_regex(args.ep_regex,EP_REGEX)
 
     new=None
     if args.new:
@@ -369,11 +371,11 @@ def main(args=None):
         season_obj_list=[]
         if season_list:=list(path.glob("Season */")):
             for season_path in season_list:
-                s=SeasonFolder(season_path,pattern,args.name,args.season,args.offset,args.start)
+                s=SeasonFolder(season_path,ep_regex,args.name,args.season,args.offset,args.start)
                 s.rename_season(new,True,True,args.thumb,False)
                 season_obj_list.append(s)
         else:
-            s=SeasonFolder(path,pattern,args.name,args.season,args.offset,args.start)
+            s=SeasonFolder(path,ep_regex,args.name,args.season,args.offset,args.start)
             s.rename_season(new,True,True,args.thumb,False)
             season_obj_list.append(s)
         
