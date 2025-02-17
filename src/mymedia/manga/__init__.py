@@ -1,0 +1,1 @@
+from .manga import VOL_REGEX,CHAP_REGEX

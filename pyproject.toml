@@ -28,3 +28,4 @@ testpaths = [
 
 [tool.poetry.scripts]
 mymedia_rename_tv='mymedia.video.rename_tv:main'
+mymedia_archive='mymedia.manga.archive:main'
