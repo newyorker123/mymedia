@@ -29,3 +29,4 @@ testpaths = [
 [tool.poetry.scripts]
 mymedia_rename_tv='mymedia.video.rename_tv:main'
 mymedia_archive='mymedia.manga.archive:main'
+media_extract_epub='mymedia.manga.extract_epub:main'
