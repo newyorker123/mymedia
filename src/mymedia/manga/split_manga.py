@@ -1,5 +1,4 @@
 from pathlib import Path
-import subprocess
 import shutil
 import argparse
 from .split_image import split_dir

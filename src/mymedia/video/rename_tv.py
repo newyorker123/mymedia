@@ -5,8 +5,8 @@ import logging
 import json
 import sys
 
-from .utils import VID_SUFFIX_LIST,SUB_SUFFIX_LIST,IMG_SUFFIX_LIST,NFO_SUFFIX_LIST,EP_REGEX,MYMEIDA_CONFIG
-from mymedia.utils import match_num,cat_regex
+from .video import VID_SUFFIX_LIST,SUB_SUFFIX_LIST,IMG_SUFFIX_LIST,NFO_SUFFIX_LIST,EP_REGEX,MYMEIDA_CONFIG
+from mymedia.utils.utils import match_num,cat_regex
 
 
 
