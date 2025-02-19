@@ -1,8 +1,6 @@
 import re
 import sys
 
-from ..utils import get_group
-
 VID_SUFFIX_LIST=['.mkv','.mp4']
 SUB_SUFFIX_LIST=['.srt','.ass','.ASS','.SRT']
 IMG_SUFFIX_LIST=['.jpg','.png','.jpeg']
