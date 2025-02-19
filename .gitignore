@@ -144,3 +144,4 @@ dmypy.json
 
 # My assist files
 tests/*.ipynb
+wiki/
