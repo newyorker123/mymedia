@@ -15,7 +15,7 @@ import shutil
 import zipfile
 
 from . import CHAP_REGEX,VOL_REGEX
-from mymedia.utils import match_num, match_string,file_sort,cat_regex
+from mymedia.utils.utils import match_num, match_string,file_sort,cat_regex
 
 
 def archive_image(image_dir:Path,out_dir,out_stem,delete:int,sort_func=file_sort):
