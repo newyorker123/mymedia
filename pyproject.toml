@@ -30,6 +30,6 @@ testpaths = [
 [tool.poetry.scripts]
 mymedia_rename_tv='mymedia.video.rename_tv:main'
 mymedia_archive='mymedia.manga.archive:main'
-media_extract_epub='mymedia.manga.extract_epub:main'
-media_split_manga='mymedia.manga.split_manga:main'
-media_suffix='mymedia.utils.suffix:main'
+mymedia_extract_epub='mymedia.manga.extract_epub:main'
+mymedia_split_manga='mymedia.manga.split_manga:main'
+mymedia_suffix='mymedia.utils.suffix:main'
