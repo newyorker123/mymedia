@@ -37,7 +37,10 @@ def convert_to_number(n:str):
         return int(n)
 
 
-def match_num(content:str,patterns:list[str],type_=None):
+def match_num(content:str,patterns:list[str]|str,type_=None):
+    if isinstance(patterns,str):
+        patterns=[patterns]
+
     for pattern in patterns:
         match = re.search(pattern,content)
         if match:
@@ -48,6 +51,9 @@ def match_num(content:str,patterns:list[str],type_=None):
 
 
 def match_string(content:str,patterns:list[str],type_=None):
+    if isinstance(patterns,str):
+        patterns=[patterns]
+
     for pattern in patterns:
         match = re.search(pattern,content)
         if match:

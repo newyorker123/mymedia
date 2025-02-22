@@ -6,24 +6,27 @@ import json
 import sys
 
 from .video import VID_SUFFIX_LIST,SUB_SUFFIX_LIST,IMG_SUFFIX_LIST,NFO_SUFFIX_LIST,EP_REGEX,MYMEIDA_CONFIG
-from mymedia.utils.utils import match_num,cat_regex
+from mymedia.utils.utils import match_num,cat_regex, match_string
 
 
 
 class TVFile:
     TYPE="TV"
-    def __init__(self,path:Path,ep_regex:list[str]):
+    def __init__(self,path:Path,ep_regex:list[str]|None,is_movie=False):
         self.path=path.resolve()
         self.original_name=self.path.name
-        self.ep_regex=ep_regex
-        self.match_ep=match_num(self.path.name,ep_regex,'episode')
+        self.is_movie=is_movie
+        
+        if not self.is_movie:
+            self.ep_regex=ep_regex
+            self.match_ep=match_num(self.path.name,ep_regex,'episode')
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.path})"
     
     def rename(self,name,season,offset:int=0):
         old_name=self.original_name
-        new_f=self.path.with_stem(f"{name} S{season:02}E{self.match_ep+offset:02}")
+        new_f=self.path.with_stem(name) if self.is_movie else self.path.with_stem(f"{name} S{season:02}E{self.match_ep+offset:02}")
         new_name=new_f.name
         if new_name != old_name:
             self.path.rename(new_f)
@@ -32,7 +35,8 @@ class TVFile:
         return 0
     
     def log_rename(self,old_name,new_name,season):
-        logger=logging.getLogger(f"Season {season}")
+        
+        logger=logging.getLogger("Movie") if self.is_movie else logging.getLogger(f"Season {season}")
         logger.debug(f"{self.TYPE} : \"{old_name}\" is renamed to \"{new_name}\"")
     
 
@@ -44,14 +48,21 @@ class ShowFile(TVFile):
         super().__init__(path,ep_regex)
         self.new=False if re.search(self.standard_regex,self.path.stem) else True
 
+class MovieFile(TVFile):
+    TYPE="MOVIE"
+
+    def __init__(self,path):
+        super().__init__(path, None, is_movie=True)
+
 
 class SubFile(TVFile):
     TYPE="SUB"
     standard_regex=r"^.*?\sS\d+E\d+(\.\w+)?"
 
-    def __init__(self,path:Path,ep_regex:list[str]):
-        super().__init__(path,ep_regex)
-        self.new=False if re.search(self.standard_regex,self.path.stem) else True
+    def __init__(self,path:Path,ep_regex:list[str]|None,is_movie=False):
+        super().__init__(path,ep_regex,is_movie)
+        if not self.is_movie:
+            self.new=False if re.search(self.standard_regex,self.path.stem) else True
 
     def get_sub_version(self):
         if (res:=re.search(r"\b(tc|sc|jptc|jpsc|chs|cht|jp|jap|gb)\b",self.original_name,re.I)):
@@ -72,7 +83,7 @@ class SubFile(TVFile):
     def rename(self,name,season,offset=0):
         version=self.get_sub_version()
         old_name=self.original_name
-        new_p=self.path.with_stem(f"{name} S{season:02}E{self.match_ep+offset:02}.{version}")
+        new_p=self.path.with_stem(f"{name}.{version}") if self.is_movie else self.path.with_stem(f"{name} S{season:02}E{self.match_ep+offset:02}.{version}")
         new_name=new_p.name
         if old_name != new_name:
             self.path.rename(new_p)
@@ -102,6 +113,56 @@ class NFOFile(TVFile):
 
     
 
+class MovieFolder:
+    def __init__(self,path:Path|str,name:str|None):
+        self.path=Path(path).resolve()
+        self.name=name
+        self.movie=None
+        self.sub=None
+        self.log=None
+
+        self.get_movie()
+        self.get_sub()
+
+        if self.name is None:
+            self.infer_name()
+
+    def get_movie(self):
+        vid_list=[f for f in self.path.iterdir() if (f.is_file() and f.suffix in VID_SUFFIX_LIST)]
+        assert len(vid_list)==1, "Can only have one video file in Movie Folder"
+        self.movie=MovieFile(vid_list[0])
+
+    def get_sub(self):
+        sub_list= [f for f in self.path.iterdir() if (f.is_file() and f.suffix in SUB_SUFFIX_LIST)]
+        assert len(sub_list)<2
+        
+        self.sub= SubFile(sub_list[0],None,True) if len(sub_list)==1 else None
+
+    def infer_name(self):
+        name=match_string(self.path.name,r"(.*?)\s\(\d{4}\)","movie name")
+        self.name=name
+
+    def rename_movie(self):
+        self.init_logger()
+
+        self.movie.rename(self.name,None)
+
+        if self.sub is not None:
+            self.sub.rename(self.name,None)
+
+    def init_logger(self):
+        logger=logging.getLogger(f"Movie")
+        file_handler = logging.FileHandler(self.path/"rename_history.log", mode="a", encoding="utf-8")
+        logger.setLevel("DEBUG")
+        #file_handler.setLevel("DEBUG")
+        formatter = logging.Formatter("{asctime} {message}",style="{",datefmt="%Y-%m-%d %H:%M")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    def console_log(self):
+        print(f"Movie {self.name} renamed successfully")
+
+
 
 
 
@@ -118,7 +179,6 @@ class SeasonFolder:
         self.other_list=[]
         self.start=None
 
-        self.config=None
         self.log=None
         self.stats=None
         self.scan()
@@ -366,7 +426,9 @@ def main(args=None):
     
 
     if args.movie:
-        pass
+        movie_folder=MovieFolder(path,args.name)
+        movie_folder.rename_movie()
+        movie_folder.console_log()
     else:
         season_obj_list=[]
         if season_list:=list(path.glob("Season */")):
