@@ -178,7 +178,7 @@ class SeasonFolder:
         self.nfo_list=[]
         self.other_list=[]
         self.start=None
-
+        self.config=None
         self.log=None
         self.stats=None
         self.scan()
