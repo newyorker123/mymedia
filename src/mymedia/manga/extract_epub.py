@@ -5,24 +5,28 @@ import re
 import shutil
 
 
-out=Path('out')
-out.mkdir(exist_ok=True)
+def extract_epub(path:Path|str):
+    path=Path(path)
 
+    out=path/'out'
+    out.mkdir(exist_ok=True)
 
-def extract_epub():
-    tmp=Path('tmp')
-    tmp.mkdir()
+    tmp=path/'tmp'
 
-    for book in Path('.').glob('*.epub'):
+    for book in path.glob('*.epub',case_sensitive=False):
+        tmp.mkdir(exist_ok=True)
+
         tmp_book=Path(shutil.copy2(book,tmp))
         tmp_book=tmp_book.rename(tmp_book.with_suffix('.zip'))
 
-        shutil.unpack_archive(tmp_book,'tmp')
+        shutil.unpack_archive(tmp_book,tmp)
 
-        extract_images(book.stem,tmp)
+        extract_images(book.stem,tmp,out)
+        print(f"{book.stem} finished")
 
 
-def extract_images(name:str,tmp:Path):
+def extract_images(name:str,tmp:Path,out:Path):
+
     images = None
 
     if tmp/'OEBPS' in tmp.iterdir():
@@ -41,9 +45,16 @@ def extract_images(name:str,tmp:Path):
     images.replace(out/name)
     shutil.rmtree(tmp)
 
+def parse_args(args=None):
+    parser=argparse.ArgumentParser()
+    parser.add_argument("-p","--path",default='.')
+    return parser.parse_args(args)
+
 
 def main():
-    extract_epub()
+    args=parse_args()
+    path=Path(args.path)
+    extract_epub(path)
 
 
 
