@@ -2,14 +2,14 @@ import re
 import sys
 from pathlib import Path
 
-def get_group(match):
+# def get_group(match):
 
-    if match is None:
-        raise ValueError(f"")
+#     if match is None:
+#         raise ValueError(f"")
     
-    for f in match.groups():
-        if f:
-            return f 
+#     for f in match.groups():
+#         if f:
+#             return f 
         
 
 def is_num(n:str):
@@ -97,14 +97,14 @@ def raise_match_error(content:str,type_,out_type,input_=True,extra_message=None)
         raise ValueError(f"Can't match {type_} for {content}")
     
 
-def file_sort(file:Path):
-    num=re.search(r"\d+(_\d+)?",file.stem).group()
-    num=re.sub('_',".",num)
-    try:
-        num=float(num)
-    except ValueError:
-        ValueError(f"Can't sort file {file.name} because the finename is't number")
-    return num
+# def file_sort(file:Path):
+#     num=re.search(r"\d+(_\d+)?",file.stem).group()
+#     num=re.sub('_',".",num)
+#     try:
+#         num=float(num)
+#     except ValueError:
+#         ValueError(f"Can't sort file {file.name} because the finename is't number")
+#     return num
 
 
 def cat_regex(regex,regex_list:list[str]):

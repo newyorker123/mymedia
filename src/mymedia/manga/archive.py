@@ -14,17 +14,19 @@ from pathlib import Path
 import shutil
 import zipfile
 
+from natsort import natsorted
+
 from . import CHAP_REGEX,VOL_REGEX
-from mymedia.utils.utils import match_num, match_string,file_sort,cat_regex
+from mymedia.utils.utils import match_num, match_string,cat_regex
 
 
-def archive_image(image_dir:Path,out_dir,out_stem,delete:int,sort_func=file_sort):
+def archive_image(image_dir:Path,out_dir,out_stem,delete:int):
 
     files=list(image_dir.iterdir())
     if delete < 0:
-        files=sorted(files,key=sort_func)[:delete]
+        files=natsorted(files)[:delete]
     elif delete > 0:
-        files=sorted(files,key=sort_func)[delete:]
+        files=natsorted(files)[delete:]
 
     archive_file=Path(out_dir)/f"{out_stem}.cbz"
 
