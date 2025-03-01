@@ -47,7 +47,7 @@ def match_num(content:str,patterns:list[str]|str,type_=None):
             return convert_to_number(match.group(1))
     
     type_= 'number' if type_ is None else type_
-    raise_match_error(content,type_,'num',True)
+    return raise_match_error(content,type_,'num',True)
 
 
 def match_string(content:str,patterns:list[str],type_=None):
@@ -60,7 +60,7 @@ def match_string(content:str,patterns:list[str],type_=None):
             return match.group(1)
     
     type_='string' if type_ is None else type_
-    raise_match_error(content,type_,'str',True)
+    return raise_match_error(content,type_,'str',True)
 
 
 
