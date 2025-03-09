@@ -119,7 +119,7 @@ def mode_vol(path:Path,output_dir:Path, name, vol_regex:list[str]):
 
         change_colophon(folder)
 
-        archive_image(folder,output_dir,out_stem,0,None)
+        archive_image(folder,output_dir,out_stem,0)
 
         print(f"{folder} finished")
 
