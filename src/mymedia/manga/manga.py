@@ -4,7 +4,7 @@ digit=r"\d+(\.\d+)?"
 
 VOL_REGEX=[
     fr"Vol[._]({digit})",
-    fr"第({{digit}})[卷集]",
+    fr"第({digit})[卷集]",
     fr"\({digit}\)",
     fr"\s({digit})",
 ]

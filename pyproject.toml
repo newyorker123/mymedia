@@ -10,6 +10,7 @@ readme = "README.md"
 python = ">=3.12"
 pillow = ">=11.1.0"
 natsort = ">=8.4.0"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -34,3 +35,4 @@ mymedia_archive='mymedia.manga.archive:main'
 mymedia_extract_epub='mymedia.manga.extract_epub:main'
 mymedia_split_manga='mymedia.manga.split_manga:main'
 mymedia_suffix='mymedia.utils.suffix:main'
+mymedia_calibre='mymedia.manga.calibre_meta:main'

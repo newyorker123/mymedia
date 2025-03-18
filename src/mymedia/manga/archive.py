@@ -54,13 +54,13 @@ def prompt_args(mode):
     if mode == 'vol':
         vol_regex=input("Enter volume regex(no input to use default, ';' to seperate multiple values):")
         args['vol_regex']=None if (vol_regex=="0" or vol_regex=="") else vol_regex.split(';')
-    elif mode == 'chap':
+    elif mode in ['chap','chapter']:
         chap_regex=input("Enter chapter regex(no input to use default, ';' to seperate multiple values):")
         args['chap_regex']=None if (chap_regex=='0' or chap_regex == "") else chap_regex.split(';')
 
         title_regex=input("Enter title regex(no input for no title, ';' to seperate multiple values):")
         args['title_regex']=None if (title_regex=='0' or title_regex == "") else title_regex.split(';')
-    else:
+    elif mode == 'bilibili':
         vol_regex=input("Enter volume regex(no input to use default, ';' to seperate multiple values):")
         args['vol_regex']=None if (vol_regex=="0" or vol_regex=="") else vol_regex.split(';')
 
@@ -77,6 +77,7 @@ def prompt_args(mode):
 
 
 def mode_bilibili(path:Path,output_dir:Path,name ,vol_regex:list, chap_regex:list, title_regex:str, delete:int):
+    path=Path(path)
     volumes=[folder for folder in path.glob('*/') if folder.name != output_dir.name]
     title_note={}
 
@@ -172,10 +173,11 @@ def archive_ComicInfo(cbz_file,comicinfo:Path):
 def mode_chap(path:Path,output_dir:Path, name, chap_regex: list[str], title_regex:str,delete:int):
     folders=[folder for folder in path.glob('*/') if folder.name != output_dir.name]
 
-    if len(folders) != 1:
-        raise RuntimeError('Can only have one manga folder')
+    if len(folders) == 1:
+        manga=folders[0]
+    else:
+        manga=path
     
-    manga=folders[0]
     title_note={}
     for chap in manga.glob('*/'):
         chap_num=match_num(chap.name,chap_regex,'chapter')
@@ -242,10 +244,12 @@ def main(args=None):
         chap_regex = cat_regex(args['chap_regex'],CHAP_REGEX)
         title_regex = args['title_regex']
         mode_bilibili(args['path'],output_path,args['name'],vol_regex,chap_regex,title_regex,args['delete'])
-    else:
+    elif args['mode'] in ['chap', 'chapter']:
         chap_regex = cat_regex(args['chap_regex'],CHAP_REGEX)
         title_regex = args['title_regex']
         mode_chap(path,output_path,args['name'],chap_regex,title_regex,args['delete'])
+    else:
+        raise ValueError(f"Unrecognized mode: {args['mode']}")
 
 
 
